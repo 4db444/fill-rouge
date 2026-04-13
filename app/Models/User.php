@@ -49,4 +49,17 @@ class User extends Authenticatable
     public function received_settlements () : HasMany {
         return $this->hasMany(Settlement::class, "receiver_id");
     }
+
+    public function posts () : HasMany {
+        return $this->hasMany(Post::class, "user_id");
+    }
+
+    public function liked_posts () : BelongsToMany {
+        return $this->belongsToMany(
+            Post::class,
+            "likes",
+            "user_id",
+            "post_id"
+        );
+    }
 }
