@@ -22,5 +22,7 @@
     <footer>
         <h1>footer</h1>
     </footer>
+
+    @yield("script")
 </body>
 </html>
