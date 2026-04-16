@@ -21,7 +21,6 @@ class PostController extends Controller
 
     public function store(PostCreateRequest $request)
     {
-        // dd($request->validated());
         $user = Auth::user();
         $user->posts()->create(
             $request->validated()
@@ -42,9 +41,21 @@ class PostController extends Controller
         ]);
     }
 
-    public function show(string $id)
+    public function show(Post $post)
     {
-        //
+        $post->load(["comments" => function ($query) {
+                $query->latest();
+            }, 
+            "comments.user.profile"])
+            ->loadCount([
+                "likes",
+                "comments",
+                "likes as is_liked" => function ($query){
+                    $query->where("user_id", auth()->user()->id);
+                }
+            ]);
+            
+        return view ("post.show", compact("post"));
     }
 
     public function edit(string $id)

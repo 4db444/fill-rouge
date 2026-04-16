@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
@@ -27,7 +28,7 @@ Route::middleware("auth")->group(function() {
     Route::prefix("/profile")->group(function() {
         Route::put("/{user}/info", [UserController::class, "updateInfo"])->name("user.info.update");
         Route::put("/{user}/password", [UserController::class, "updatePassword"])->name("user.password.update");
-        Route::get("/{user?}", [UserController::class, "show"])
+        Route::get("/{user?}", [UserController::class, "show"])->name("user.profile")
             ->missing(function () {
                 return redirect()->route("dashboard");
             });
@@ -37,5 +38,9 @@ Route::middleware("auth")->group(function() {
     Route::prefix("/posts")->group (function () {
         Route::post("/", [PostController::class, "store"])->name("post.create");
         Route::post("/{post}/toggle_like", [PostController::class, "toggle_like"])->name("post.toggle_like");
+        Route::get("/{post}", [PostController::class, "show"])->name("post.show");
+        
+        Route::post("/{post}/comments", [CommentController::class, "store"])->name("post.comment.create");
+        Route::delete("/{post}/comments/{comment}", [CommentController::class, "destroy"])->name("post.comment.delete");
     });
 });

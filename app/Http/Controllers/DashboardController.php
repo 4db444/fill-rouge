@@ -11,6 +11,7 @@ class DashboardController extends Controller
     public function index () {
         $posts = Post::latest()
                      ->withCount("likes")
+                     ->withCount("comments")
                      ->withCount(["likes as is_liked" => function ($query) {
                         $query->where("user_id", Auth::user()->id);
                      }])
