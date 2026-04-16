@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        User::create([
+        $user = User::create([
             "first_name" => "brahim",
             "last_name" => "alhiane",
             "email" => "brahim@gmail.com",
@@ -25,9 +25,14 @@ class DatabaseSeeder extends Seeder
             "role" => "admin"
         ]);
 
+        $user->profile()->create([
+            "img_url" => "storage/images/profiles/default.png"
+        ]);
+
         $this->call([
             UserSeeder::class,
-            PostSeeder::class
+            PostSeeder::class,
+            CommentSeeder::class
         ]);
     }
 }
