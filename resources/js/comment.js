@@ -14,7 +14,7 @@ async function handleDelete (e) {
             method : "DELETE",
             headers : {
                 "Accept" : "Application/json",
-                "Content-Type" : "Application/json"
+                "Content-Type" : "Application/json",
             }
         })
 
@@ -35,7 +35,7 @@ commentForm.addEventListener("submit", async e => {
             method : "POST",
             headers : {
                 "Content-Type" : "Application/json",
-                "accept" : "Application/json"
+                "accept" : "Application/json",
             },
             body : JSON.stringify({content})
         });

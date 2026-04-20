@@ -8,7 +8,7 @@ document.querySelectorAll(".like-btn").forEach(elem => {
             method : "POST",
             headers : {
                 "Content-Type" : "application/json",
-                "Accept" : "application/json"
+                "Accept" : "application/json",
             }
         });
         if(res.status === 200){

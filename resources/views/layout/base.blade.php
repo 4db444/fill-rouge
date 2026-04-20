@@ -11,13 +11,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     @vite(["resources/css/app.css"])
 </head>
-<body class="bg-white text-gray-900 font-sans min-h-screen flex flex-col">
+<body class="bg-white text-gray-900 font-sans min-h-screen flex flex-col relative">
     <header class="border-b border-gray-200 bg-white">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
             <a href="{{ url('/dashboard') }}" class="text-lg font-semibold tracking-tight text-black">myapp</a>
             @auth
                 <div class="flex items-center gap-4">
                     <a href="{{ url('/profile') }}" class="text-sm text-gray-600 hover:text-black transition-colors">Profile</a>
+                    <a href="{{ route('requests.index') }}" class="text-sm text-gray-600 hover:text-black transition-colors">Requests</a>
                     <form action="{{ route("logout") }}" method="POST">
                         @csrf
                         <button type="submit" class="text-sm text-gray-500 hover:text-black transition-colors">Logout</button>
@@ -36,6 +37,10 @@
             <p class="text-center text-xs text-gray-400">&copy; {{ date('Y') }} myapp. All rights reserved.</p>
         </div>
     </footer>
+
+    <ul class="fixed pointer-events-none top-0 right-0 h-screen bg-red-500 w-[400px]">
+        @yield("logs")
+    </ul>
 
     @yield("script")
 </body>
