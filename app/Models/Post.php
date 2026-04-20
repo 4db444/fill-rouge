@@ -20,6 +20,10 @@ class Post extends Model
         "user_id"
     ];
 
+    protected $casts = [
+        "expire_at" => "date"
+    ];
+
     public function user () : BelongsTo {
         return $this->belongsTo(User::class);
     }
@@ -39,5 +43,18 @@ class Post extends Model
             "post_id",
             "user_id"
         );
+    }
+
+    public function group () : BelongsTo {
+        return $this->belongsTo(Group::class);
+    }
+
+    public function requests () : BelongsToMany {
+        return $this->belongsToMany(
+            User::class,
+            "requests",
+            "post_id",
+            "user_id"
+        )->withPivot('status')->withTimestamps();
     }
 }

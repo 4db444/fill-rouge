@@ -14,6 +14,8 @@ class UserRegistrationRequest extends FormRequest
             "last_name" => "required|string|min:2",
             "email" => "required|email|unique:users",
             "password" => "required|confirmed|min:8",
+            "city" => "required|string",
+            "country" => "required|string"
         ];
     }
 }

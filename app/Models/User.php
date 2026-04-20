@@ -20,7 +20,9 @@ class User extends Authenticatable
         "password",
         "role",
         "is_banned",
-        "bio"
+        "bio",
+        "city",
+        "country"
     ];
 
     protected $hidden = [
@@ -66,5 +68,25 @@ class User extends Authenticatable
 
     public function profile () : MorphOne {
         return $this->morphOne(Image::class, "imageable");
+    }
+
+    public function requests () : BelongsToMany {
+        return $this->belongsToMany(
+            Post::class,
+            "requests",
+            "user_id",
+            "post_id"
+        )->withPivot('status')->withTimestamps();
+    }
+
+    public function receivedRequests () {
+        return Post::where('user_id', $this->id)
+            ->whereHas('requests', function ($query) {
+                $query->where('status', 'pending');
+            })
+            ->with(['requests' => function ($query) {
+                $query->where('status', 'pending')->withPivot('status');
+            }, 'requests.profile'])
+            ->get();
     }
 }

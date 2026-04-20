@@ -52,6 +52,9 @@ class PostController extends Controller
                 "comments",
                 "likes as is_liked" => function ($query){
                     $query->where("user_id", auth()->user()->id);
+                },
+                "requests as is_requested" => function ($query) {
+                    $query->where("users.id", auth()->user()->id);
                 }
             ]);
             
