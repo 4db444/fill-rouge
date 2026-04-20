@@ -22,6 +22,8 @@ class DatabaseSeeder extends Seeder
             "last_name" => "alhiane",
             "email" => "brahim@gmail.com",
             "password" => Hash::make("brahimbrahim"),
+            "city" => "Agadir",
+            "country" => "morocco",
             "role" => "admin"
         ]);
 

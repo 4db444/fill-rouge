@@ -16,12 +16,20 @@ return new class extends Migration
             $table->string("title");
             $table->text("content");
             $table->string("address")->nullable();
+            $table->date("expire_at")->nullable();
 
+            $table->unsignedBigInteger("group_id")->nullable();
             $table->unsignedBigInteger("user_id");
+
             $table->foreign("user_id")
                   ->references("id")
                   ->on("users")
                   ->onDelete("cascade");
+
+            $table->foreign("group_id")
+                  ->references("id")
+                  ->on("groups")
+                  ->onDelete("no action");
 
             $table->timestamps();
         });

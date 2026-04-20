@@ -17,7 +17,8 @@ class PostFactory extends Factory
             "title" => fake()->sentence(5, true),
             "content" => fake()->paragraph(30, true),
             "address" => fake()->address(),
-            "user_id" => User::inRandomOrder()->first()->id
+            "user_id" => User::inRandomOrder()->first()->id,
+            "expire_at" => fake()->date()
         ];
     }
 }

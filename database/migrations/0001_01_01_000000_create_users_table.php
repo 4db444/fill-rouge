@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->text("bio")->nullable();
+            $table->string("city");
+            $table->string("country");
             $table->enum("role", ["user", "admin", "moderator"])->default("user");
             $table->boolean("is_banned")->default(false);
             $table->timestamps();
