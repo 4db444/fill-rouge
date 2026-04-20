@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\RequestController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
@@ -42,5 +43,15 @@ Route::middleware("auth")->group(function() {
         
         Route::post("/{post}/comments", [CommentController::class, "store"])->name("post.comment.create");
         Route::delete("/{post}/comments/{comment}", [CommentController::class, "destroy"])->name("post.comment.delete");
+        
+        Route::post("/{post}/requests", [RequestController::class, "toggle_request"])->name("post.toggle_request");
+    });
+
+    // request management routes
+    Route::prefix("/requests")->group(function () {
+        Route::get("/", [RequestController::class, "index"])->name("requests.index");
+        Route::delete("/{post}/cancel", [RequestController::class, "cancel"])->name("requests.cancel");
+        Route::post("/{post}/accept/{user}", [RequestController::class, "accept"])->name("requests.accept");
+        Route::delete("/{post}/reject/{user}", [RequestController::class, "reject"])->name("requests.reject");
     });
 });
