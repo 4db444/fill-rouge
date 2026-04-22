@@ -79,6 +79,14 @@ class User extends Authenticatable
         )->withPivot('status')->withTimestamps();
     }
 
+    public function expenses () : HasMany {
+        return $this->hasMany(Expense::class, "user_id");
+    }
+
+    public function expense_shares () : HasMany {
+        return $this->hasMany(ExpenseShares::class, "user_id");
+    }
+
     public function receivedRequests () {
         return Post::where('user_id', $this->id)
             ->whereHas('requests', function ($query) {

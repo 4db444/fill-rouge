@@ -9,7 +9,11 @@ class RequestCreationRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->route("post")->user_id !== auth()->user()->id;
+        $user = auth()->user();
+        $post = $this->route("post");
+        return $post->user_id !== $user->id 
+        && 
+        !$post->requests()->where("users.id", $user->id)->wherePivot("status", "accepted")->exists();
     }
 
     public function rules(): array

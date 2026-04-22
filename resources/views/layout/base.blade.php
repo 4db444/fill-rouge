@@ -18,6 +18,7 @@
             @auth
                 <div class="flex items-center gap-4">
                     <a href="{{ url('/profile') }}" class="text-sm text-gray-600 hover:text-black transition-colors">Profile</a>
+                    <a href="{{ route('groups.index') }}" class="text-sm text-gray-600 hover:text-black transition-colors">Groups</a>
                     <a href="{{ route('requests.index') }}" class="text-sm text-gray-600 hover:text-black transition-colors">Requests</a>
                     <form action="{{ route("logout") }}" method="POST">
                         @csrf
@@ -38,7 +39,7 @@
         </div>
     </footer>
 
-    <ul class="fixed pointer-events-none top-0 right-0 h-screen bg-red-500 w-[400px]">
+    <ul class="fixed pointer-events-none top-0 right-0 h-screen bg-red-500/10 w-[400px]">
         @yield("logs")
     </ul>
 

@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GroupController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\UserController;
@@ -53,5 +54,16 @@ Route::middleware("auth")->group(function() {
         Route::delete("/{post}/cancel", [RequestController::class, "cancel"])->name("requests.cancel");
         Route::post("/{post}/accept/{user}", [RequestController::class, "accept"])->name("requests.accept");
         Route::delete("/{post}/reject/{user}", [RequestController::class, "reject"])->name("requests.reject");
+    });
+
+    // group expense management routes
+    Route::prefix("/groups")->group(function () {
+        Route::get("/", [GroupController::class, "index"])->name("groups.index");
+        Route::get("/{group}", [GroupController::class, "show"])->name("groups.show");
+        Route::post("/{group}/expenses", [GroupController::class, "storeExpense"])->name("groups.expenses.store");
+        Route::delete("/{group}/expenses/{expense}", [GroupController::class, "deleteExpense"])->name("groups.expenses.delete");
+        Route::post("/{group}/settlements", [GroupController::class, "storeSettlement"])->name("groups.settlements.store");
+        Route::post("/{group}/settlements/{settlement}/verify", [GroupController::class, "verifySettlement"])->name("groups.settlements.verify");
+        Route::delete("/{group}/settlements/{settlement}/reject", [GroupController::class, "rejectSettlement"])->name("groups.settlements.reject");
     });
 });

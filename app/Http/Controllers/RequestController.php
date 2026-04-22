@@ -36,6 +36,8 @@ class RequestController extends Controller
 
     public function toggle_request (RequestCreationRequest $request, Post $post) {
         $user = Auth::user();
+
+        // dd($post->requests()->where("users.id", $user->id)->wherePivot("status", "accepted")->get());
         
         $is_requested = $post->requests()->where("users.id", $user->id)->exists();
 
@@ -50,6 +52,7 @@ class RequestController extends Controller
 
     public function cancel (Post $post) {
         $user = Auth::user();
+
         $post->requests()->detach($user->id);
 
         return redirect()->back()->with('success', 'Request cancelled.');

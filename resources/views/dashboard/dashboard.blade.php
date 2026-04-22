@@ -41,15 +41,19 @@
             @forelse ($posts as $post)
                 <article class="border border-gray-200 rounded-lg p-4 sm:p-6 bg-white relative">
                     @if ($post->expire_at && $post->expire_at->isPast())
-                        <span class="absolute top-1 right-1">expired</span>
+                        <span class="absolute top-1 right-1">Expired</span>
                     @else
                         @if ($post->user_id !== auth()->user()->id)
-                            <form action="{{route("post.toggle_request", $post->id)}}" method="POST">
-                                @csrf
-                                <button class="request-btn absolute top-3 right-3 px-3 py-1.5 text-xs font-medium rounded-md {{ $post->is_requested ? 'border border-gray-300 text-gray-600 hover:text-black hover:border-black' : 'bg-black text-white hover:bg-gray-800' }} transition-colors">
-                                    {{ $post->is_requested ? "Cancel" : "Request"}}
-                                </button>
-                            </form>
+                            @if($post->is_joined) 
+                                <a href="{{route("groups.show", $post->group_id)}}">go to group</a>
+                            @else
+                                <form action="{{route("post.toggle_request", $post->id)}}" method="POST">
+                                    @csrf
+                                    <button class="request-btn absolute top-3 right-3 px-3 py-1.5 text-xs font-medium rounded-md {{ $post->is_requested ? 'border border-gray-300 text-gray-600 hover:text-black hover:border-black' : 'bg-black text-white hover:bg-gray-800' }} transition-colors">
+                                        {{ $post->is_requested ? "Cancel" : "Request"}}
+                                    </button>
+                                </form>
+                            @endif
                         @endif
                     @endif
                     

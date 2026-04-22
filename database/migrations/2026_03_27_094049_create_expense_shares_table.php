@@ -21,7 +21,7 @@ return new class extends Migration
 
             $table->foreign("user_id")->references("id")->on("users");
             $table->foreign("group_id")->references("id")->on("groups")->onDelete("cascade");
-            $table->foreign("expense_id")->references("id")->on("expenses");
+            $table->foreign("expense_id")->references("id")->on("expenses")->onDelete("cascade");
 
             $table->timestamps();
         });

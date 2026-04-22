@@ -9,15 +9,19 @@ use Illuminate\Support\Facades\Auth;
 class DashboardController extends Controller
 {
     public function index () {
+        $user = Auth::user();
         $posts = Post::latest()
                      ->withCount([
                         "likes",
                         "comments",
-                        "likes as is_liked" => function ($query) {
-                            $query->where("user_id", Auth::user()->id);
+                        "likes as is_liked" => function ($query) use($user) {
+                            $query->where("user_id", $user->id);
                         },
-                        "requests as is_requested" => function ($query) {
-                            $query->where("id", Auth::user()->id);
+                        "requests as is_requested" => function ($query) use($user) {
+                            $query->where("id", $user->id);
+                        },
+                        "requests as is_joined" => function ($query) use($user) {
+                            $query->where("users.id", $user->id)->where("status", "accepted");
                         }
                      ])
                      ->get();

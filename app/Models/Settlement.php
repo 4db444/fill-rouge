@@ -11,7 +11,8 @@ class Settlement extends Model
         "sender_id",
         "receiver_id",
         "amount",
-        "group_id"
+        "group_id",
+        "status"
     ];
 
     public function sender () : BelongsTo {
