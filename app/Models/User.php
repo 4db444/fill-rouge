@@ -87,6 +87,14 @@ class User extends Authenticatable
         return $this->hasMany(ExpenseShares::class, "user_id");
     }
 
+    public function reports_sent () : HasMany {
+        return $this->hasMany(Report::class, "reporter_id");
+    }
+
+    public function reports_received () : HasMany {
+        return $this->hasMany(Report::class, "reported_id");
+    }
+
     public function receivedRequests () {
         return Post::where('user_id', $this->id)
             ->whereHas('requests', function ($query) {

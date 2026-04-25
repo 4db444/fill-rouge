@@ -32,10 +32,14 @@ class AuthController extends Controller
     }
 
     public function register (UserRegistrationRequest $request) {
-        User::create([
+        $user = User::create([
             ...$request->validated(),
             "password" => Hash::make($request->safe()->password),
             "role" => "user"
+        ]);
+
+        $user->profile()->create([
+            "img_url" => "storage/images/profiles/default.png"
         ]);
 
         return redirect()->route("login");

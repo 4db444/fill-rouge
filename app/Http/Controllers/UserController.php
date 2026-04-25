@@ -17,17 +17,42 @@ class UserController extends Controller
     public function show (?User $user = null) {
         $user = $user ?? Auth::user();
 
-        return view("user.profile", compact("user"));
+        // Load profile image
+        $user->load('profile');
+
+        // Load user's posts with counts
+        $posts = $user->posts()
+            ->latest()
+            ->withCount(['likes', 'comments'])
+            ->with('images')
+            ->get();
+
+        return view("user.profile", compact("user", "posts"));
     }
 
     public function updateInfo (UserInfoUpdateRequest $request, User $user) {
-        $user->update($request->validated());
-        return redirect()->back();
+        // Update basic user info
+        $user->update($request->safe()->only(['first_name', 'last_name', 'bio', 'city', 'country']));
+
+        // Handle profile image upload
+        if ($request->hasFile('profile_image')) {
+            $path = $request->file('profile_image')->store('images/profiles', 'public');
+            $imgUrl = 'storage/' . $path;
+
+            // Update existing profile image or create a new one
+            if ($user->profile) {
+                $user->profile->update(['img_url' => $imgUrl]);
+            } else {
+                $user->profile()->create(['img_url' => $imgUrl]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Profile updated successfully.');
     }
 
     public function updatePassword (UserPasswordUpdateRequest $request, User $user) {
         $user->password = Hash::make($request->validated()["new_password"]);
         $user->save();
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Password updated successfully.');
     }
 }

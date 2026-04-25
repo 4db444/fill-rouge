@@ -5,6 +5,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -23,13 +24,15 @@ Route::prefix("/auth")->group(function () {
 });
 
 Route::middleware("auth")->group(function() {
-    // dashboard route
+    // dashboard routes
     Route::get("/dashboard", [DashboardController::class, "index"])->name("dashboard");
+    Route::get("/dashboard/search", [DashboardController::class, "search"])->name("dashboard.search");
 
     // profile routes
     Route::prefix("/profile")->group(function() {
         Route::put("/{user}/info", [UserController::class, "updateInfo"])->name("user.info.update");
         Route::put("/{user}/password", [UserController::class, "updatePassword"])->name("user.password.update");
+        Route::post("/{user}/report", [ReportController::class, "store"])->name("user.report");
         Route::get("/{user?}", [UserController::class, "show"])->name("user.profile")
             ->missing(function () {
                 return redirect()->route("dashboard");
@@ -60,6 +63,8 @@ Route::middleware("auth")->group(function() {
     Route::prefix("/groups")->group(function () {
         Route::get("/", [GroupController::class, "index"])->name("groups.index");
         Route::get("/{group}", [GroupController::class, "show"])->name("groups.show");
+        Route::post("/{group}/leave", [GroupController::class, "leaveGroup"])->name("groups.leave");
+        Route::delete("/{group}/members/{user}", [GroupController::class, "removeMember"])->name("groups.members.remove");
         Route::post("/{group}/expenses", [GroupController::class, "storeExpense"])->name("groups.expenses.store");
         Route::delete("/{group}/expenses/{expense}", [GroupController::class, "deleteExpense"])->name("groups.expenses.delete");
         Route::post("/{group}/settlements", [GroupController::class, "storeSettlement"])->name("groups.settlements.store");

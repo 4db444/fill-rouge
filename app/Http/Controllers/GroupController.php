@@ -8,6 +8,7 @@ use App\Models\Expense;
 use App\Models\ExpenseShares;
 use App\Models\Group;
 use App\Models\Settlement;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -88,6 +89,67 @@ class GroupController extends Controller
             'settledPayments',
             'sentPendingSettlements'
         ));
+    }
+
+    /**
+     * Leave a group. Blocked if the user has any outstanding debt (owes or is owed).
+     */
+    public function leaveGroup(Group $group)
+    {
+        $user = Auth::user();
+
+        // Ensure user is a member
+        if (!$group->members()->where('users.id', $user->id)->exists()) {
+            abort(403);
+        }
+
+        // Admin cannot leave the group
+        if ($group->user_id === $user->id) {
+            return redirect()->back()->withErrors(['leave' => 'As the group admin, you cannot leave the group.']);
+        }
+
+        // Check for outstanding debts
+        if ($this->memberHasDebt($group, $user->id)) {
+            return redirect()->back()->withErrors(['leave' => 'You cannot leave this group because you have outstanding debts. Please settle all balances first.']);
+        }
+
+        // Detach the user from the group
+        $group->members()->detach($user->id);
+
+        return redirect()->route('groups.index')->with('success', 'You have left the group.');
+    }
+
+    /**
+     * Remove a member from the group (admin only). Blocked if the member has outstanding debt.
+     */
+    public function removeMember(Group $group, User $member)
+    {
+        $user = Auth::user();
+
+        // Only the admin can remove members
+        if ($group->user_id !== $user->id) {
+            abort(403);
+        }
+
+        // Admin cannot remove themselves
+        if ($member->id === $user->id) {
+            return redirect()->back()->withErrors(['remove' => 'You cannot remove yourself from the group.']);
+        }
+
+        // Ensure the member is actually in the group
+        if (!$group->members()->where('users.id', $member->id)->exists()) {
+            return redirect()->back()->withErrors(['remove' => 'This user is not a member of this group.']);
+        }
+
+        // Check for outstanding debts
+        if ($this->memberHasDebt($group, $member->id)) {
+            return redirect()->back()->withErrors(['remove' => 'You cannot remove this member because they have outstanding debts. All balances must be settled first.']);
+        }
+
+        // Detach the member from the group
+        $group->members()->detach($member->id);
+
+        return redirect()->back()->with('success', $member->first_name . ' has been removed from the group.');
     }
 
     /**
@@ -218,6 +280,24 @@ class GroupController extends Controller
         $settlement->delete();
 
         return redirect()->back()->with('success', 'Payment rejected.');
+    }
+
+    /**
+     * Check if a member has any outstanding debt (owes or is owed) in a group.
+     * Returns true if the member appears in any balance entry.
+     */
+    private function memberHasDebt(Group $group, int $memberId): bool
+    {
+        $group->load(['members.profile', 'admin']);
+        $balances = $this->calculateBalances($group);
+
+        foreach ($balances as $balance) {
+            if ($balance['from']->id === $memberId || $balance['to']->id === $memberId) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

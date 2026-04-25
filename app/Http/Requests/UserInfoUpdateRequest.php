@@ -18,6 +18,9 @@ class UserInfoUpdateRequest extends FormRequest
             "first_name" => "required|string|min:2",
             "last_name" => "required|string|min:2",
             "bio" => "nullable|string",
+            "city" => "required|string",
+            "country" => "required|string",
+            "profile_image" => "nullable|image|mimes:jpg,jpeg,png,webp|max:2048"
         ];
     }
 }

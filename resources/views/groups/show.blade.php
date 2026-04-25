@@ -15,6 +15,15 @@
                         {{ $group->members->count() }} members · Admin: {{ $group->admin->first_name }} {{ $group->admin->last_name }}
                     </p>
                 </div>
+                {{-- Leave Group Button (non-admin only) --}}
+                @if ($group->user_id !== auth()->user()->id)
+                    <form action="{{ route('groups.leave', $group->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to leave this group?')">
+                        @csrf
+                        <button type="submit" class="px-4 py-2 text-sm font-medium rounded-md border border-gray-300 text-gray-600 hover:text-red-600 hover:border-red-300 transition-colors">
+                            <i class="fa-solid fa-right-from-bracket mr-1.5"></i> Leave Group
+                        </button>
+                    </form>
+                @endif
             </div>
         </div>
 
@@ -39,16 +48,28 @@
             <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Members</h2>
             <div class="flex flex-wrap gap-3">
                 @foreach ($group->members as $member)
-                    <a href="{{ route('user.profile', $member->id) }}" class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 hover:border-gray-400 transition-colors group">
-                        <img 
-                            src="{{ asset($member->profile->img_url ?? 'images/default-avatar.png') }}" 
-                            class="w-6 h-6 rounded-full object-cover"
-                            alt="{{ $member->first_name }}">
-                        <span class="text-sm text-gray-700 group-hover:text-black transition-colors">{{ $member->first_name }} {{ $member->last_name }}</span>
-                        @if ($member->id === $group->user_id)
-                            <span class="text-xs text-gray-400">·&nbsp;admin</span>
+                    <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 group">
+                        <a href="{{ route('user.profile', $member->id) }}" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                            <img 
+                                src="{{ asset($member->profile->img_url ?? 'storage/images/profiles/default.png') }}" 
+                                class="w-6 h-6 rounded-full object-cover"
+                                alt="{{ $member->first_name }}">
+                            <span class="text-sm text-gray-700">{{ $member->first_name }} {{ $member->last_name }}</span>
+                            @if ($member->id === $group->user_id)
+                                <span class="text-xs text-gray-400">·&nbsp;admin</span>
+                            @endif
+                        </a>
+                        {{-- Remove button (admin only, not for self) --}}
+                        @if ($group->user_id === auth()->user()->id && $member->id !== auth()->user()->id)
+                            <form action="{{ route('groups.members.remove', [$group->id, $member->id]) }}" method="POST" onsubmit="return confirm('Remove {{ $member->first_name }} from the group?')" class="ml-1">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-xs text-gray-400 hover:text-red-500 transition-colors p-0.5" title="Remove member">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </form>
                         @endif
-                    </a>
+                    </div>
                 @endforeach
             </div>
         </div>
@@ -85,13 +106,13 @@
                         <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
                             <div class="flex items-center gap-2 min-w-0 flex-1">
                                 <img 
-                                    src="{{ asset($balance['from']->profile->img_url ?? 'images/default-avatar.png') }}" 
+                                    src="{{ asset($balance['from']->profile->img_url ?? 'storage/images/profiles/default.png') }}" 
                                     class="w-7 h-7 rounded-full object-cover shrink-0"
                                     alt="{{ $balance['from']->first_name }}">
                                 <span class="text-sm font-medium text-gray-800 truncate">{{ $balance['from']->first_name }}</span>
                                 <i class="fa-solid fa-arrow-right text-xs text-gray-300 shrink-0"></i>
                                 <img 
-                                    src="{{ asset($balance['to']->profile->img_url ?? 'images/default-avatar.png') }}" 
+                                    src="{{ asset($balance['to']->profile->img_url ?? 'storage/images/profiles/default.png') }}" 
                                     class="w-7 h-7 rounded-full object-cover shrink-0"
                                     alt="{{ $balance['to']->first_name }}">
                                 <span class="text-sm font-medium text-gray-800 truncate">{{ $balance['to']->first_name }}</span>
@@ -136,7 +157,7 @@
                                 <label class="flex items-center gap-2 px-3 py-2 rounded-md border border-gray-200 cursor-pointer has-[:checked]:border-black has-[:checked]:bg-gray-50 transition-colors">
                                     <input type="checkbox" name="benefactors[]" value="{{ $member->id }}" class="accent-black w-3.5 h-3.5">
                                     <img 
-                                        src="{{ asset($member->profile->img_url ?? 'images/default-avatar.png') }}" 
+                                        src="{{ asset($member->profile->img_url ?? 'storage/images/profiles/default.png') }}" 
                                         class="w-5 h-5 rounded-full object-cover"
                                         alt="{{ $member->first_name }}">
                                     <span class="text-sm text-gray-700">{{ $member->first_name }}</span>
@@ -165,7 +186,7 @@
                                 @endif
                                 <div class="flex items-center gap-2 mb-2">
                                     <img 
-                                        src="{{ asset($expense->user->profile->img_url ?? 'images/default-avatar.png') }}" 
+                                        src="{{ asset($expense->user->profile->img_url ?? 'storage/images/profiles/default.png') }}" 
                                         class="w-5 h-5 rounded-full object-cover"
                                         alt="{{ $expense->user->first_name }}">
                                     <span class="text-xs text-gray-500">Paid by <span class="font-medium text-gray-700">{{ $expense->user->first_name }} {{ $expense->user->last_name }}</span></span>
@@ -178,7 +199,7 @@
                                     @foreach ($expense->expense_shares as $share)
                                         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 text-xs text-gray-600">
                                             <img 
-                                                src="{{ asset($share->user->profile->img_url ?? 'images/default-avatar.png') }}" 
+                                                src="{{ asset($share->user->profile->img_url ?? 'storage/images/profiles/default.png') }}" 
                                                 class="w-4 h-4 rounded-full object-cover"
                                                 alt="{{ $share->user->first_name }}">
                                             {{ $share->user->first_name }}
@@ -252,7 +273,7 @@
                             <div class="flex items-center justify-between gap-3 py-3 border-b border-gray-100 last:border-0">
                                 <div class="flex items-center gap-3 min-w-0 flex-1">
                                     <img 
-                                        src="{{ asset($settlement->sender->profile->img_url ?? 'images/default-avatar.png') }}" 
+                                        src="{{ asset($settlement->sender->profile->img_url ?? 'storage/images/profiles/default.png') }}" 
                                         class="w-8 h-8 rounded-full object-cover shrink-0"
                                         alt="{{ $settlement->sender->first_name }}">
                                     <div class="min-w-0">
@@ -290,7 +311,7 @@
                             <div class="flex items-center justify-between gap-3 py-3 border-b border-gray-100 last:border-0">
                                 <div class="flex items-center gap-3 min-w-0 flex-1">
                                     <img 
-                                        src="{{ asset($settlement->receiver->profile->img_url ?? 'images/default-avatar.png') }}" 
+                                        src="{{ asset($settlement->receiver->profile->img_url ?? 'storage/images/profiles/default.png') }}" 
                                         class="w-8 h-8 rounded-full object-cover shrink-0"
                                         alt="{{ $settlement->receiver->first_name }}">
                                     <div class="min-w-0">
@@ -320,13 +341,13 @@
                         <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
                             <div class="flex items-center gap-2 min-w-0 flex-1">
                                 <img 
-                                    src="{{ asset($settlement->sender->profile->img_url ?? 'images/default-avatar.png') }}" 
+                                    src="{{ asset($settlement->sender->profile->img_url ?? 'storage/images/profiles/default.png') }}" 
                                     class="w-6 h-6 rounded-full object-cover shrink-0"
                                     alt="{{ $settlement->sender->first_name }}">
                                 <span class="text-sm text-gray-700 truncate">{{ $settlement->sender->first_name }}</span>
                                 <i class="fa-solid fa-arrow-right text-xs text-gray-300 shrink-0"></i>
                                 <img 
-                                    src="{{ asset($settlement->receiver->profile->img_url ?? 'images/default-avatar.png') }}" 
+                                    src="{{ asset($settlement->receiver->profile->img_url ?? 'storage/images/profiles/default.png') }}" 
                                     class="w-6 h-6 rounded-full object-cover shrink-0"
                                     alt="{{ $settlement->receiver->first_name }}">
                                 <span class="text-sm text-gray-700 truncate">{{ $settlement->receiver->first_name }}</span>

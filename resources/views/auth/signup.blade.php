@@ -4,6 +4,7 @@
         <div class="w-full max-w-sm">
             <h2 class="text-2xl font-semibold text-black text-center mb-8">Create an account</h2>
             <form action="/auth/signup" method="POST" class="space-y-4">
+                @csrf
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label for="first_name" class="block text-sm font-medium text-gray-700 mb-1">First name</label>

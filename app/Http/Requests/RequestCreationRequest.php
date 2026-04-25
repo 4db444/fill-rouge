@@ -11,9 +11,7 @@ class RequestCreationRequest extends FormRequest
     {
         $user = auth()->user();
         $post = $this->route("post");
-        return $post->user_id !== $user->id 
-        && 
-        !$post->requests()->where("users.id", $user->id)->wherePivot("status", "accepted")->exists();
+        return $post->user_id !== $user->id;
     }
 
     public function rules(): array

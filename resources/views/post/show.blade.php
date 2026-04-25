@@ -5,7 +5,7 @@
     {{-- post --}}
     <article class="border border-gray-200 rounded-lg p-4 sm:p-6 bg-white relative">
         @if ($post->expire_at && $post->expire_at->isPast())
-            <span class="absolute top-1 right-1">expired</span>
+            <span class="absolute top-3 right-3 px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-500 border border-gray-200">Expired</span>
         @else
             @if ($post->user_id !== auth()->user()->id)
                 <form action="{{route("post.toggle_request", $post->id)}}" method="POST">
@@ -19,6 +19,16 @@
         <h1 class="text-2xl font-semibold text-black mb-2">{{$post->title}}</h1>
         <p class="text-xs text-gray-400 mb-4">{{$post->address}}</p>
         <p class="text-sm text-gray-700 leading-relaxed mb-4">{{$post->content}}</p>
+
+        {{-- Post Images Gallery --}}
+        @if ($post->images && $post->images->count() > 0)
+            <div class="flex flex-wrap gap-2 mb-4">
+                @foreach ($post->images as $image)
+                    <img src="{{ asset($image->img_url) }}" class="w-28 h-28 rounded-lg object-cover border border-gray-200 hover:opacity-90 transition-opacity cursor-pointer" alt="Post image">
+                @endforeach
+            </div>
+        @endif
+
         <div class="flex items-center gap-4 pt-3 border-t border-gray-100">
             <button data-id="{{$post->id}}" class="like-btn text-sm text-gray-500 hover:text-black transition-colors">
                 {{$post->likes_count}} 
@@ -29,7 +39,7 @@
     </article>
 
     {{-- comments --}}
-    <div class="border border-gray-200 rounded-lg p-4 sm:p-6 bg-white">
+    <div class="border border-gray-200 rounded-lg p-4 sm:p-6 bg-white mt-4">
         <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">Comments</h2>
         <form id="comment-form">
             <div class="flex gap-3 mb-6">
@@ -42,7 +52,7 @@
                         <div class="flex items-center justify-between w-full">
                             <a href="{{route("user.profile", $comment->user->id)}}" class="flex items-center gap-3 group">
                                 <img 
-                                    src="{{ asset($comment->user->profile->img_url) }}" 
+                                    src="{{ asset($comment->user->profile->img_url ?? 'storage/images/profiles/default.png') }}" 
                                     class="w-9 h-9 rounded-full object-cover ring-2 ring-gray-200 group-hover:ring-gray-400 transition-all"
                                     alt="{{ $comment->user->first_name }}">
                                 <span class="text-sm font-semibold text-gray-900 group-hover:text-black transition-colors">{{ $comment->user->first_name }} {{ $comment->user->last_name }}</span>

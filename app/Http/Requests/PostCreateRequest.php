@@ -17,7 +17,9 @@ class PostCreateRequest extends FormRequest
         return [
             "title" => "required|string|max:250",
             "content" => "required|string|max:1000",
-            "address" => "nullable|string|max:250"
+            "address" => "nullable|string|max:250",
+            "images" => "nullable|array|max:5",
+            "images.*" => "image|mimes:jpg,jpeg,png,webp|max:2048"
         ];
     }
 }

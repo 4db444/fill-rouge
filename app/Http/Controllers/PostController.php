@@ -22,9 +22,19 @@ class PostController extends Controller
     public function store(PostCreateRequest $request)
     {
         $user = Auth::user();
-        $user->posts()->create(
-            $request->validated()
+        $post = $user->posts()->create(
+            $request->safe()->only(['title', 'content', 'address'])
         );
+
+        // Handle multiple image uploads
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('images/posts', 'public');
+                $post->images()->create([
+                    'img_url' => 'storage/' . $path
+                ]);
+            }
+        }
 
         return redirect()-> back();
     }
@@ -46,7 +56,8 @@ class PostController extends Controller
         $post->load(["comments" => function ($query) {
                 $query->latest();
             }, 
-            "comments.user.profile"])
+            "comments.user.profile",
+            "images"])
             ->loadCount([
                 "likes",
                 "comments",
