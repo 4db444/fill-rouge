@@ -4,13 +4,6 @@
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         <h1 class="text-2xl font-semibold text-black mb-6">Profile</h1>
 
-        {{-- Success Message --}}
-        @if (session('success'))
-            <div class="mb-6 border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <p class="text-sm text-gray-700">{{ session('success') }}</p>
-            </div>
-        @endif
-
         @if ($user->id === auth()->user()->id)
             {{-- ═══════════════════════════════════
                  OWN PROFILE — Edit Forms
@@ -90,18 +83,6 @@
                     </form>
                 </div>
             </div>
-
-            {{-- Validation Errors --}}
-            @if ($errors->any())
-                <div class="mt-6 border border-gray-300 rounded-lg p-4 bg-gray-50">
-                    <ul class="space-y-1">
-                        @foreach ($errors->all() as $err)
-                            <li class="text-sm text-gray-700">• {{$err}}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
         @else
             {{-- ═══════════════════════════════════
                  OTHER USER'S PROFILE — Read Only
@@ -144,17 +125,6 @@
                             </button>
                         </div>
                     </form>
-
-                    {{-- Report Errors --}}
-                    @if ($errors->any())
-                        <div class="mt-4 border border-gray-300 rounded-lg p-3 bg-gray-50">
-                            <ul class="space-y-1">
-                                @foreach ($errors->all() as $err)
-                                    <li class="text-sm text-gray-700">• {{$err}}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
                 </div>
             </div>
         @endif
@@ -177,9 +147,30 @@
 
                         {{-- Post Images Thumbnails --}}
                         @if ($post->images && $post->images->count() > 0)
-                            <div class="flex flex-wrap gap-2 mb-3">
-                                @foreach ($post->images as $image)
-                                    <img src="{{ asset($image->img_url) }}" class="w-14 h-14 rounded-md object-cover border border-gray-200" alt="Post image">
+                            @php $count = $post->images->count(); @endphp
+                            <div class="mb-4 grid gap-1 rounded-lg overflow-hidden border border-gray-100 {{ 
+                                $count == 1 ? 'grid-cols-1' : 
+                                ($count == 2 || $count == 4 ? 'grid-cols-2' : 
+                                ($count == 3 ? 'grid-cols-2' : 'grid-cols-6')) 
+                            }}">
+                                @foreach ($post->images as $index => $image)
+                                    @if ($index < 5)
+                                        <div class="relative {{ 
+                                            $count == 3 && $index == 0 ? 'col-span-2' : 
+                                            ($count >= 5 && $index < 2 ? 'col-span-3' : 
+                                            ($count >= 5 && $index >= 2 ? 'col-span-2' : '')) 
+                                        }}">
+                                            <img src="{{ asset($image->img_url) }}" 
+                                                 class="w-full h-full object-cover hover:opacity-90 transition-opacity cursor-pointer {{ 
+                                                    $count == 1 ? 'max-h-96' : 
+                                                    ($count == 2 || $count == 4 ? 'aspect-square sm:aspect-video' : 
+                                                    ($count == 3 && $index == 0 ? 'aspect-video' : 
+                                                    ($count == 3 ? 'aspect-square' : 
+                                                    ($count >= 5 && $index < 2 ? 'aspect-square sm:aspect-video' : 'aspect-square')))) 
+                                                 }}" 
+                                                 alt="Post image">
+                                        </div>
+                                    @endif
                                 @endforeach
                             </div>
                         @endif

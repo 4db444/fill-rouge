@@ -44,11 +44,3 @@
         </div>
     </main>
 @endsection
-
-@section("logs")
-    @if ($errors->any())
-        @foreach ($errors->all() as $err)
-            <li>{{ $err }}</li>
-        @endforeach
-    @endif
-@endsection

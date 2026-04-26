@@ -8,8 +8,9 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RequestController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\ModeratorController;
 use Illuminate\Support\Facades\Route;
-use App\Models\User;
 
 Route::get('/', function () {
     return view('welcome');
@@ -23,7 +24,7 @@ Route::prefix("/auth")->group(function () {
     Route::post("/logout", [AuthController::class, "logout"])->name("logout");
 });
 
-Route::middleware("auth")->group(function() {
+Route::middleware(["auth", "banned"])->group(function() {
     // dashboard routes
     Route::get("/dashboard", [DashboardController::class, "index"])->name("dashboard");
     Route::get("/dashboard/search", [DashboardController::class, "search"])->name("dashboard.search");
@@ -64,11 +65,24 @@ Route::middleware("auth")->group(function() {
         Route::get("/", [GroupController::class, "index"])->name("groups.index");
         Route::get("/{group}", [GroupController::class, "show"])->name("groups.show");
         Route::post("/{group}/leave", [GroupController::class, "leaveGroup"])->name("groups.leave");
-        Route::delete("/{group}/members/{user}", [GroupController::class, "removeMember"])->name("groups.members.remove");
+        Route::delete("/{group}/members/{member}", [GroupController::class, "removeMember"])->name("groups.members.remove");
         Route::post("/{group}/expenses", [GroupController::class, "storeExpense"])->name("groups.expenses.store");
         Route::delete("/{group}/expenses/{expense}", [GroupController::class, "deleteExpense"])->name("groups.expenses.delete");
         Route::post("/{group}/settlements", [GroupController::class, "storeSettlement"])->name("groups.settlements.store");
         Route::post("/{group}/settlements/{settlement}/verify", [GroupController::class, "verifySettlement"])->name("groups.settlements.verify");
         Route::delete("/{group}/settlements/{settlement}/reject", [GroupController::class, "rejectSettlement"])->name("groups.settlements.reject");
+    });
+
+    // admin routes
+    Route::middleware("admin")->prefix("/admin")->group(function () {
+        Route::get("/", [AdminController::class, "index"])->name("admin.dashboard");
+        Route::put("/users/{user}/role", [AdminController::class, "updateRole"])->name("admin.users.role");
+    });
+
+    // moderator routes
+    Route::middleware("moderator")->prefix("/moderator")->group(function () {
+        Route::get("/", [ModeratorController::class, "index"])->name("moderator.dashboard");
+        Route::get("/users/{user}/reports", [ModeratorController::class, "userReports"])->name("moderator.user.reports");
+        Route::put("/users/{user}/ban", [ModeratorController::class, "toggleBan"])->name("moderator.users.ban");
     });
 });

@@ -27,22 +27,6 @@
             </div>
         </div>
 
-        {{-- Success / Error Messages --}}
-        @if (session('success'))
-            <div class="mb-6 border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <p class="text-sm text-gray-700">{{ session('success') }}</p>
-            </div>
-        @endif
-        @if ($errors->any())
-            <div class="mb-6 border border-gray-300 rounded-lg p-4 bg-gray-50">
-                <ul class="space-y-1">
-                    @foreach ($errors->all() as $err)
-                        <li class="text-sm text-gray-700">• {{ $err }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
         {{-- Members Row --}}
         <div class="border border-gray-200 rounded-lg p-4 bg-white mb-6">
             <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">Members</h2>

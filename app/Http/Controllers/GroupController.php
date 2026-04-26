@@ -114,6 +114,7 @@ class GroupController extends Controller
         }
 
         // Detach the user from the group
+        $user->requests()->detach($group->post);
         $group->members()->detach($user->id);
 
         return redirect()->route('groups.index')->with('success', 'You have left the group.');
@@ -305,22 +306,47 @@ class GroupController extends Controller
      *
      * Returns an array of: ['from' => User, 'to' => User, 'amount' => float]
      * representing who owes whom after accounting for expenses and verified settlements.
+     *
+     * Handles users who left the group but still appear in historical expenses/settlements.
      */
     private function calculateBalances(Group $group)
     {
         $members = $group->members;
         $memberIds = $members->pluck('id')->toArray();
 
+        // Collect ALL user IDs involved (members + former members from expenses/settlements)
+        $expenses = $group->expenses()->with('expense_shares')->get();
+        $settlements = Settlement::where('group_id', $group->id)
+            ->where('status', 'verified')
+            ->get();
+
+        $allUserIds = collect($memberIds);
+
+        // Add payer and benefactor IDs from expenses
+        foreach ($expenses as $expense) {
+            $allUserIds->push($expense->user_id);
+            foreach ($expense->expense_shares as $share) {
+                $allUserIds->push($share->user_id);
+            }
+        }
+
+        // Add sender and receiver IDs from settlements
+        foreach ($settlements as $settlement) {
+            $allUserIds->push($settlement->sender_id);
+            $allUserIds->push($settlement->receiver_id);
+        }
+
+        $allUserIds = $allUserIds->unique()->values()->toArray();
+
         // Build a net balance matrix: net[A][B] = how much A owes B
         $net = [];
-        foreach ($memberIds as $a) {
-            foreach ($memberIds as $b) {
+        foreach ($allUserIds as $a) {
+            foreach ($allUserIds as $b) {
                 $net[$a][$b] = 0;
             }
         }
 
         // Process expenses: for each expense share, the benefactor owes the payer
-        $expenses = $group->expenses()->with('expense_shares')->get();
         foreach ($expenses as $expense) {
             $payerId = $expense->user_id;
             foreach ($expense->expense_shares as $share) {
@@ -333,38 +359,49 @@ class GroupController extends Controller
         }
 
         // Process verified settlements: sender paid receiver, reduce what sender owes receiver
-        $settlements = Settlement::where('group_id', $group->id)
-            ->where('status', 'verified')
-            ->get();
         foreach ($settlements as $settlement) {
             $net[$settlement->sender_id][$settlement->receiver_id] -= $settlement->amount;
+        }
+
+        // Pre-load any non-member users (former members) so we can display their names
+        $nonMemberIds = array_diff($allUserIds, $memberIds);
+        $formerMembers = collect();
+        if (!empty($nonMemberIds)) {
+            $formerMembers = User::with('profile')->whereIn('id', $nonMemberIds)->get();
         }
 
         // Simplify: compute net between each pair
         $balances = [];
         $processed = [];
-        foreach ($memberIds as $a) {
-            foreach ($memberIds as $b) {
+        foreach ($allUserIds as $a) {
+            foreach ($allUserIds as $b) {
                 if ($a >= $b) continue;
-                $key = min($a, $b) . '-' . max($a, $b);
+                $key = $a . '-' . $b;
                 if (isset($processed[$key])) continue;
                 $processed[$key] = true;
 
                 $netAmount = $net[$a][$b] - $net[$b][$a];
                 if (abs($netAmount) < 0.01) continue;
 
+                // Resolve user objects: check current members first, then former members
+                $userA = $members->firstWhere('id', $a) ?? $formerMembers->firstWhere('id', $a);
+                $userB = $members->firstWhere('id', $b) ?? $formerMembers->firstWhere('id', $b);
+
+                // Skip if user no longer exists in the database
+                if (!$userA || !$userB) continue;
+
                 if ($netAmount > 0) {
                     // A owes B
                     $balances[] = [
-                        'from' => $members->firstWhere('id', $a),
-                        'to' => $members->firstWhere('id', $b),
+                        'from' => $userA,
+                        'to' => $userB,
                         'amount' => round($netAmount, 2),
                     ];
                 } else {
                     // B owes A
                     $balances[] = [
-                        'from' => $members->firstWhere('id', $b),
-                        'to' => $members->firstWhere('id', $a),
+                        'from' => $userB,
+                        'to' => $userA,
                         'amount' => round(abs($netAmount), 2),
                     ];
                 }

@@ -22,9 +22,30 @@
 
         {{-- Post Images Gallery --}}
         @if ($post->images && $post->images->count() > 0)
-            <div class="flex flex-wrap gap-2 mb-4">
-                @foreach ($post->images as $image)
-                    <img src="{{ asset($image->img_url) }}" class="w-28 h-28 rounded-lg object-cover border border-gray-200 hover:opacity-90 transition-opacity cursor-pointer" alt="Post image">
+            @php $count = $post->images->count(); @endphp
+            <div class="mb-4 grid gap-1 rounded-lg overflow-hidden border border-gray-100 {{ 
+                $count == 1 ? 'grid-cols-1' : 
+                ($count == 2 || $count == 4 ? 'grid-cols-2' : 
+                ($count == 3 ? 'grid-cols-2' : 'grid-cols-6')) 
+            }}">
+                @foreach ($post->images as $index => $image)
+                    @if ($index < 5)
+                        <div class="relative {{ 
+                            $count == 3 && $index == 0 ? 'col-span-2' : 
+                            ($count >= 5 && $index < 2 ? 'col-span-3' : 
+                            ($count >= 5 && $index >= 2 ? 'col-span-2' : '')) 
+                        }}">
+                            <img src="{{ asset($image->img_url) }}" 
+                                 class="w-full h-full object-cover hover:opacity-90 transition-opacity cursor-pointer {{ 
+                                    $count == 1 ? 'max-h-96' : 
+                                    ($count == 2 || $count == 4 ? 'aspect-square sm:aspect-video' : 
+                                    ($count == 3 && $index == 0 ? 'aspect-video' : 
+                                    ($count == 3 ? 'aspect-square' : 
+                                    ($count >= 5 && $index < 2 ? 'aspect-square sm:aspect-video' : 'aspect-square')))) 
+                                 }}" 
+                                 alt="Post image">
+                        </div>
+                    @endif
                 @endforeach
             </div>
         @endif

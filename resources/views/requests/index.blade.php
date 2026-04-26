@@ -4,13 +4,6 @@
     <main class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
         <h1 class="text-2xl font-semibold text-black mb-6">Requests</h1>
 
-        {{-- Success Message --}}
-        @if (session('success'))
-            <div class="mb-6 border border-gray-200 rounded-lg p-4 bg-gray-50">
-                <p class="text-sm text-gray-700">{{ session('success') }}</p>
-            </div>
-        @endif
-
         {{-- Tabs --}}
         <div class="mb-6">
             <div class="flex border-b border-gray-200">
